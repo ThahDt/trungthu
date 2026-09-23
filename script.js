@@ -96,8 +96,16 @@ function drawMeteors() {
     ctx.lineWidth = 1;
 }
 
+function drawBackground() {
+    const bgGradient = ctx.createLinearGradient(0, h, 0, 0);
+    bgGradient.addColorStop(0, "rgb(6, 0, 20)");
+    bgGradient.addColorStop(1, "#00020a");
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, w, h);
+}
+
 function loop() {
-    ctx.clearRect(0, 0, w, h);
+    drawBackground();
     drawStars();
     drawMeteors();
     if (Math.random() < 0.01) {
