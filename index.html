@@ -114,6 +114,20 @@
             cursor: pointer;
         }
 
+        .lantern.secret-lantern {
+            filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.95)) drop-shadow(0 0 25px rgba(245, 158, 11, 0.8)) brightness(1.25);
+            animation: secretLanternFloat 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes secretLanternFloat {
+            from {
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)) brightness(1.15);
+            }
+            to {
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 30px rgba(245, 158, 11, 0.9)) brightness(1.35);
+            }
+        }
+
         #message {
             position: fixed;
             top: 50%;
@@ -305,6 +319,58 @@
             max-width: 85vw;
             line-height: 1.5;
             cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #wish-popup.is-secret {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 45px rgba(255, 215, 0, 0.75), 0 0 90px rgba(245, 158, 11, 0.45), inset 0 0 20px rgba(255, 215, 0, 0.25);
+            animation: secretPopupGlow 1.5s infinite alternate;
+        }
+
+        @keyframes secretPopupGlow {
+            0% {
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.6), 0 0 60px rgba(245, 158, 11, 0.3);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                box-shadow: 0 0 50px rgba(255, 215, 0, 0.9), 0 0 100px rgba(245, 158, 11, 0.6);
+                transform: translate(-50%, -50%) scale(1.03);
+            }
+        }
+
+        .secret-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #f59e0b);
+            color: #1f1035;
+            font-size: 0.95rem;
+            font-weight: 800;
+            padding: 5px 18px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.85);
+            letter-spacing: 1px;
+            text-shadow: none;
+            animation: pulseGlow 1s infinite alternate;
+        }
+
+        .secret-sparkle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 10005;
+            animation: sparkleFly 1.2s ease-out forwards;
+            user-select: none;
+        }
+
+        @keyframes sparkleFly {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(0.6);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(1.4);
+            }
         }
 
         @media (max-width: 600px) {

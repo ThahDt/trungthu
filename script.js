@@ -139,7 +139,8 @@ const data = {
             "Thôi mà, đi với tớ đi 😢",
             "Đi một lần thôi mà 😩",
             "Không đi là tớ giận cậu đó 😭"
-        ]
+        ],
+        secretWish: "Cậu biết không, trong hàng vạn ánh đèn lồng rực rỡ đêm nay, cậu chính là điều may mắn và tuyệt vời nhất mà tớ từng gặp. Cảm ơn vì đã luôn ở bên tớ nhé! 💖✨"
     },
     2: {
         sentences: [
@@ -169,7 +170,8 @@ const data = {
             "Thôi mà 😢",
             "Đi đi mà 😩",
             "Không đi là buồn á 😭"
-        ]
+        ],
+        secretWish: "Công chúa nhỏ của anh à! Trong hàng ngàn ngọn đèn trời đêm nay, em chính là điều kỳ diệu và quý giá nhất của anh. Chúc Đỗ Phương Anh luôn là nàng công chúa hạnh phúc nhất trần đời, mãi bên anh nhé! Yêu công chúa rất nhiều! 👑❤️✨"
     },
     3: {
         sentences: [
@@ -190,7 +192,8 @@ const data = {
             "Thôi mà, đi với em nha 😢",
             "Em muốn đi với anh lắm á 😩",
             "Không đi là em giận đó 😭"
-        ]
+        ],
+        secretWish: "Anh là vầng trăng sáng nhất soi rọi vào trái tim em. Cảm ơn anh vì luôn yêu thương và che chở cho em. Chúc cho tình yêu của chúng mình mãi tròn đầy như ánh trăng rằm này nhé! Yêu anh! ❤️✨"
     },
     4: {
         sentences: [
@@ -211,7 +214,8 @@ const data = {
             "Thôi mà, vợ buồn á 😢",
             "Đi đi mà 😩",
             "Không đi là vợ giận đó 😭"
-        ]
+        ],
+        secretWish: "Cảm ơn chồng vì luôn là bờ vai vững chãi và ấm áp của vợ. Trung Thu này và mãi mãi về sau, chúc gia đình mình luôn ngập tràn tiếng cười và hạnh phúc! Yêu chồng nhiều! 👨‍👩‍👧❤️"
     },
     5: {
         sentences: [
@@ -232,7 +236,8 @@ const data = {
             "Đi với chồng đi mà 😢",
             "Thôi năn nỉ đó 😩",
             "Nếu vợ không đi, chồng buồn lắm 😭"
-        ]
+        ],
+        secretWish: "Vợ yêu à, có vợ bên cạnh chính là mùa trăng trọn vẹn nhất cuộc đời chồng. Chúc vợ yêu luôn luôn rạng rỡ, an yên và mãi là bến đỗ bình yên nhất của chồng nhé! Yêu vợ vô cùng! 👩‍❤️‍👨❤️"
     }
 };
 
@@ -245,7 +250,7 @@ if (!selectedId || !data[selectedId]) {
     selectedId = "2";
 }
 
-const { sentences, wishes, invite, noTexts } = data[selectedId];
+const { sentences, wishes, invite, noTexts, secretWish } = data[selectedId];
 
 const messageBox = document.getElementById("message");
 const inviteBox = document.getElementById("invite-box");
@@ -304,14 +309,66 @@ function showSentence(sentence) {
 messageBox.style.pointerEvents = "none";
 showSentence(sentences[currentSentence]);
 
-// ======================= HIỆU ỨNG LỒNG ĐÈN BAY =======================
+// ======================= HIỆU ỨNG ÂM THANH & LẤP LÁNH SECRET =======================
+function playSecretChime() {
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const audioCtx = new AudioCtx();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6 (chuông ngân trong trẻo)
+        notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+            gain.gain.setValueAtTime(0.18, audioCtx.currentTime + idx * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.6);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime + idx * 0.1);
+            osc.stop(audioCtx.currentTime + idx * 0.1 + 0.6);
+        });
+    } catch (e) {
+        // Fallback im lặng
+    }
+}
+
+function createSparkleBurst(x, y) {
+    const symbols = ["✨", "⭐", "🌟", "💖", "🌕", "🎉"];
+    const posX = x || (window.innerWidth / 2);
+    const posY = y || (window.innerHeight / 2);
+
+    for (let i = 0; i < 18; i++) {
+        const span = document.createElement("span");
+        span.className = "secret-sparkle";
+        span.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+        span.style.left = posX + "px";
+        span.style.top = posY + "px";
+        span.style.fontSize = (16 + Math.random() * 14) + "px";
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 80 + Math.random() * 90;
+        span.style.setProperty("--tx", Math.cos(angle) * distance + "px");
+        span.style.setProperty("--ty", Math.sin(angle) * distance + "px");
+
+        document.body.appendChild(span);
+        setTimeout(() => span.remove(), 1200);
+    }
+}
+
+let lanternCount = 0;
+
 function createLantern() {
     // Tạm dừng sinh đèn khi người dùng chuyển sang tab khác để tiết kiệm CPU/pin
     if (document.hidden) return;
 
+    lanternCount++;
+    // Cứ khoảng 8-10 đèn lồng thì có 1 chiếc đèn lồng mang bí mật
+    const isSecretLantern = (lanternCount % 9 === 0);
+
     const lantern = document.createElement("img");
     lantern.src = "./den.png";
-    lantern.className = "lantern";
+    lantern.className = isSecretLantern ? "lantern secret-lantern" : "lantern";
 
     const type = Math.floor(3 * Math.random()) + 1;
     let width, duration, opacity;
@@ -328,6 +385,11 @@ function createLantern() {
         width = 30 + 40 * Math.random();
         duration = 8000 + 4000 * Math.random();
         opacity = 0.95;
+    }
+
+    if (isSecretLantern) {
+        width = Math.max(38, width * 1.15); // Đèn bí mật kích thước rõ ràng, nổi bật
+        opacity = 1;
     }
 
     lantern.style.width = width + "px";
@@ -357,12 +419,28 @@ function createLantern() {
         if (!lanternClickable) return;
         e.stopPropagation();
 
-        const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
-        wishPopup.textContent = randomWish;
-        wishPopup.style.display = "block";
+        if (isSecretLantern) {
+            // Khi bấm trúng lồng đèn bí mật!
+            playSecretChime();
+            createSparkleBurst(e.clientX, e.clientY);
+
+            wishPopup.classList.add("is-secret");
+            wishPopup.innerHTML = `
+                <div class="secret-badge">🌟 ĐIỀU ƯỚC BÍ MẬT 🌟</div>
+                <div style="font-size: 1.25rem; line-height: 1.6; margin-top: 6px;">${secretWish}</div>
+            `;
+            wishPopup.style.display = "block";
+        } else {
+            // Đèn lồng bình thường
+            const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+            wishPopup.classList.remove("is-secret");
+            wishPopup.innerHTML = `<div>${randomWish}</div>`;
+            wishPopup.style.display = "block";
+        }
 
         const closeWish = () => {
             wishPopup.style.display = "none";
+            wishPopup.classList.remove("is-secret");
             document.removeEventListener("click", closeWish);
         };
 
