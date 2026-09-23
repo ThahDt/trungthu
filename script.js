@@ -156,7 +156,6 @@ const data = {
             "Anh mong mình sẽ cùng em đi qua thật nhiều mùa trăng nữa.",
             "Anh yêu em lắmm!",
             "Mong tình mình luôn ấm áp, vẹn tròn như ánh trăng đêm nay.",
-            "Nếu em đọc được cái này, anh sẽ tỏ tình em.",
             "Thả đèn lồng lên trời để xin một điều: Đỗ Phương Anh làm công chúa của anh suốt đời nhé!",
             "Mong công chúa sẽ đi ngủ sớm ạ.",
             "Mong công chúa sẽ đi tắm sớm ạ.",
@@ -356,22 +355,20 @@ function createSparkleBurst(x, y) {
     }
 }
 
-let availableWishes = [];
+let normalWishPool = [];
+let wishClickCount = 0;
+let hasFoundSecret = false;
 
-function getNextWish() {
-    if (availableWishes.length === 0) {
-        availableWishes = [...wishes];
-        // Đảm bảo câu bí mật có trong danh sách
-        if (secretWish && !availableWishes.includes(secretWish)) {
-            availableWishes.push(secretWish);
-        }
-        // Xáo trộn danh sách để không bị lặp câu liên tiếp
-        for (let i = availableWishes.length - 1; i > 0; i--) {
+// Hàm lấy điều ước thường (xáo trộn để không bị lặp câu liên tiếp)
+function getNextNormalWish() {
+    if (normalWishPool.length === 0) {
+        normalWishPool = wishes.filter(w => w !== "Nếu em đọc được cái này, anh sẽ tỏ tình em." && w !== secretWish);
+        for (let i = normalWishPool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [availableWishes[i], availableWishes[j]] = [availableWishes[j], availableWishes[i]];
+            [normalWishPool[i], normalWishPool[j]] = [normalWishPool[j], normalWishPool[i]];
         }
     }
-    return availableWishes.pop();
+    return normalWishPool.pop();
 }
 
 function createLantern() {
@@ -427,11 +424,33 @@ function createLantern() {
         if (!lanternClickable) return;
         e.stopPropagation();
 
-        const selectedWish = getNextWish();
-        const isSecret = (selectedWish === "Nếu em đọc được cái này, anh sẽ tỏ tình em." || selectedWish === secretWish);
+        wishClickCount++;
+
+        let isSecret = false;
+        let selectedWish = "";
+
+        // Cơ chế độ khó săn tìm bí mật:
+        // - 4 lần bấm đầu: Chắc chắn chỉ ra các câu chúc quan tâm thường để người yêu đọc dần
+        // - Từ lần 5 đến lần 10: Tỉ lệ trúng chỉ là 12% mỗi lần bấm (tạo cảm giác hồi hộp, không quá dễ)
+        // - Từ lần 11 trở đi: Đảm bảo trúng secret nếu chưa từng trúng (bảo hiểm may mắn tránh bấm quá lâu)
+        if (!hasFoundSecret) {
+            if (wishClickCount >= 5 && Math.random() < 0.12) {
+                isSecret = true;
+            } else if (wishClickCount >= 11) {
+                isSecret = true;
+            }
+        } else {
+            // Sau khi đã trúng một lần rồi, nếu tiếp tục bấm thì tỉ lệ ra lại chỉ là 5%
+            if (Math.random() < 0.05) {
+                isSecret = true;
+            }
+        }
 
         if (isSecret) {
-            // Khi mở trúng điều ước bí mật!
+            hasFoundSecret = true;
+            selectedWish = secretWish || "Nếu em đọc được cái này, anh sẽ tỏ tình em.";
+
+            // Kích hoạt hiệu ứng secret đặc biệt
             playSecretChime();
             createSparkleBurst(e.clientX, e.clientY);
 
@@ -442,13 +461,13 @@ function createLantern() {
                     ${selectedWish}
                 </div>
             `;
-            wishPopup.style.display = "block";
         } else {
-            // Điều ước bình thường
+            selectedWish = getNextNormalWish();
             wishPopup.classList.remove("is-secret");
             wishPopup.innerHTML = `<div>${selectedWish}</div>`;
-            wishPopup.style.display = "block";
         }
+
+        wishPopup.style.display = "block";
 
         const closeWish = () => {
             wishPopup.style.display = "none";
