@@ -171,7 +171,7 @@ const data = {
             "Đi đi mà 😩",
             "Không đi là buồn á 😭"
         ],
-        secretWish: "Công chúa nhỏ của anh à! Trong hàng ngàn ngọn đèn trời đêm nay, em chính là điều kỳ diệu và quý giá nhất của anh. Chúc Đỗ Phương Anh luôn là nàng công chúa hạnh phúc nhất trần đời, mãi bên anh nhé! Yêu công chúa rất nhiều! 👑❤️✨"
+        secretWish: "Nếu em đọc được cái này, anh sẽ tỏ tình em."
     },
     3: {
         sentences: [
@@ -356,19 +356,32 @@ function createSparkleBurst(x, y) {
     }
 }
 
-let lanternCount = 0;
+let availableWishes = [];
+
+function getNextWish() {
+    if (availableWishes.length === 0) {
+        availableWishes = [...wishes];
+        // Đảm bảo câu bí mật có trong danh sách
+        if (secretWish && !availableWishes.includes(secretWish)) {
+            availableWishes.push(secretWish);
+        }
+        // Xáo trộn danh sách để không bị lặp câu liên tiếp
+        for (let i = availableWishes.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availableWishes[i], availableWishes[j]] = [availableWishes[j], availableWishes[i]];
+        }
+    }
+    return availableWishes.pop();
+}
 
 function createLantern() {
     // Tạm dừng sinh đèn khi người dùng chuyển sang tab khác để tiết kiệm CPU/pin
     if (document.hidden) return;
 
-    lanternCount++;
-    // Cứ khoảng 8-10 đèn lồng thì có 1 chiếc đèn lồng mang bí mật
-    const isSecretLantern = (lanternCount % 9 === 0);
-
+    // Tất cả các đèn lồng đều sinh ra hoàn toàn giống nhau như ban đầu
     const lantern = document.createElement("img");
     lantern.src = "./den.png";
-    lantern.className = isSecretLantern ? "lantern secret-lantern" : "lantern";
+    lantern.className = "lantern";
 
     const type = Math.floor(3 * Math.random()) + 1;
     let width, duration, opacity;
@@ -385,11 +398,6 @@ function createLantern() {
         width = 30 + 40 * Math.random();
         duration = 8000 + 4000 * Math.random();
         opacity = 0.95;
-    }
-
-    if (isSecretLantern) {
-        width = Math.max(38, width * 1.15); // Đèn bí mật kích thước rõ ràng, nổi bật
-        opacity = 1;
     }
 
     lantern.style.width = width + "px";
@@ -419,22 +427,26 @@ function createLantern() {
         if (!lanternClickable) return;
         e.stopPropagation();
 
-        if (isSecretLantern) {
-            // Khi bấm trúng lồng đèn bí mật!
+        const selectedWish = getNextWish();
+        const isSecret = (selectedWish === "Nếu em đọc được cái này, anh sẽ tỏ tình em." || selectedWish === secretWish);
+
+        if (isSecret) {
+            // Khi mở trúng điều ước bí mật!
             playSecretChime();
             createSparkleBurst(e.clientX, e.clientY);
 
             wishPopup.classList.add("is-secret");
             wishPopup.innerHTML = `
                 <div class="secret-badge">🌟 ĐIỀU ƯỚC BÍ MẬT 🌟</div>
-                <div style="font-size: 1.25rem; line-height: 1.6; margin-top: 6px;">${secretWish}</div>
+                <div style="font-size: 1.3rem; line-height: 1.6; margin-top: 6px; font-weight: bold; color: #fef08a;">
+                    ${selectedWish}
+                </div>
             `;
             wishPopup.style.display = "block";
         } else {
-            // Đèn lồng bình thường
-            const randomWish = wishes[Math.floor(Math.random() * wishes.length)];
+            // Điều ước bình thường
             wishPopup.classList.remove("is-secret");
-            wishPopup.innerHTML = `<div>${randomWish}</div>`;
+            wishPopup.innerHTML = `<div>${selectedWish}</div>`;
             wishPopup.style.display = "block";
         }
 
